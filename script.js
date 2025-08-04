@@ -11,120 +11,160 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // PDF download handler
     downloadBtn.addEventListener('click', function() {
-        // Create a new PDF document
-        const pdf = new jsPDF('p', 'pt', 'a4');
+        // Create a new PDF document with custom properties
+        const pdf = new jsPDF({
+            orientation: 'portrait',
+            unit: 'pt',
+            format: 'a4',
+            filters: ['ASCIIHexEncode']
+        });
+
+        // Document dimensions
         const pageWidth = pdf.internal.pageSize.getWidth();
-        const margin = 40;
-        const lineHeight = 24;
+        const pageHeight = pdf.internal.pageSize.getHeight();
+        const margin = 50;
+        const contentWidth = pageWidth - margin * 2;
         let yPosition = margin;
-        
+
         // Get all form values
         const formData = new FormData(form);
         const data = {};
         formData.forEach((value, key) => {
             data[key] = value;
         });
-        
-        // Get radio button and checkbox values
+
+        // Get additional form values
         const gender = document.querySelector('input[name="gender"]:checked');
         const agreedToTerms = document.getElementById('terms').checked;
         const securityQuestion = document.getElementById('security-question').selectedOptions[0].text;
 
-        // Add header with background
-        pdf.setFillColor(33, 150, 243); // Blue background
-        pdf.rect(0, 0, pageWidth, 80, 'F');
-        
-        // Add title
-        pdf.setFontSize(24);
-        pdf.setTextColor(255, 255, 255); // White text
-        pdf.text('User Registration', pageWidth / 2, 50, { align: 'center' });
-        
-        // Add decorative element
-        pdf.setDrawColor(255, 255, 255);
-        pdf.setLineWidth(2);
-        pdf.line(pageWidth / 2 - 60, 60, pageWidth / 2 + 60, 60);
-        
-        yPosition = 100;
+        // Add premium header with gradient
+        const gradient = pdf.context.createLinearGradient(0, 0, pageWidth, 0);
+        gradient.addColorStop(0, '#4b6cb7');
+        gradient.addColorStop(1, '#182848');
+        pdf.setFillColor(gradient);
+        pdf.rect(0, 0, pageWidth, 120, 'F');
 
-        // Add user details section
-        pdf.setFontSize(16);
-        pdf.setTextColor(33, 150, 243); // Blue text
-        pdf.text('User Details', margin, yPosition);
-        yPosition += lineHeight;
-        
-        pdf.setFontSize(12);
-        pdf.setTextColor(50, 50, 50); // Dark gray text
-        
-        // Create two column layout
-        const column1 = margin;
-        const column2 = pageWidth / 2 + 20;
-        
-        // Column 1
-        pdf.text(`Full Name: ${data['full-name'] || 'Not provided'}`, column1, yPosition);
-        pdf.text(`Username: ${data['username'] || 'Not provided'}`, column1, yPosition + lineHeight);
-        pdf.text(`Unique ID: ${data['unique-id'] || 'Not provided'}`, column1, yPosition + lineHeight * 2);
-        
-        // Column 2
-        pdf.text(`Email: ${data['email'] || 'Not provided'}`, column2, yPosition);
-        pdf.text(`Phone: ${data['phone'] || 'Not provided'}`, column2, yPosition + lineHeight);
-        pdf.text(`Date of Birth: ${data['birthdate'] || 'Not provided'}`, column2, yPosition + lineHeight * 2);
-        
-        yPosition += lineHeight * 4;
-
-        // Add divider
-        pdf.setDrawColor(200, 200, 200);
-        pdf.setLineWidth(0.5);
-        pdf.line(margin, yPosition - 10, pageWidth - margin, yPosition - 10);
-        
-        // Add security section
-        pdf.setFontSize(16);
-        pdf.setTextColor(33, 150, 243);
-        pdf.text('Security Information', margin, yPosition);
-        yPosition += lineHeight;
-        
-        pdf.setFontSize(12);
-        pdf.setTextColor(50, 50, 50);
-        
-        pdf.text(`Security Question: ${securityQuestion || 'Not selected'}`, column1, yPosition);
-        pdf.text(`Security Answer: ${data['security-answer'] || 'Not provided'}`, column1, yPosition + lineHeight);
-        pdf.text(`Password: ********`, column2, yPosition);
-        pdf.text(`Terms Accepted: ${agreedToTerms ? '✓ Yes' : '✗ No'}`, column2, yPosition + lineHeight);
-        
-        yPosition += lineHeight * 3;
-
-        // Add divider
-        pdf.line(margin, yPosition - 10, pageWidth - margin, yPosition - 10);
-        
-        // Add additional information
-        pdf.setFontSize(16);
-        pdf.setTextColor(33, 150, 243);
-        pdf.text('Additional Information', margin, yPosition);
-        yPosition += lineHeight;
-        
-        pdf.setFontSize(12);
-        pdf.setTextColor(50, 50, 50);
-        
-        pdf.text(`Gender: ${gender ? gender.value.charAt(0).toUpperCase() + gender.value.slice(1) : 'Not specified'}`, column1, yPosition);
-        
-        // Handle multi-line address
-        const addressLines = pdf.splitTextToSize(`Address: ${data['address'] || 'Not provided'}`, pageWidth - margin * 2);
-        pdf.text(addressLines, column1, yPosition + lineHeight);
-        
-        // Add footer
+        // Add logo placeholder (replace with actual logo if available)
         pdf.setFontSize(10);
-        pdf.setTextColor(150, 150, 150);
-        pdf.text(`Document ID: ${Math.random().toString(36).substring(2, 10).toUpperCase()}`, margin, 800);
-        pdf.text(`Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}`, pageWidth - margin, 800, { align: 'right' });
-        
-        // Add watermark
-        pdf.setFontSize(60);
-        pdf.setTextColor(230, 230, 230);
-        pdf.setGState(new pdf.GState({ opacity: 0.2 }));
-        pdf.text('CONFIDENTIAL', pageWidth / 2, 450, { angle: 45, align: 'center' });
-        pdf.setGState(new pdf.GState({ opacity: 1 }));
-        
-        // Save the PDF
-        const fileName = `Registration_${data['username'] || 'User'}_${new Date().getFullYear()}${(new Date().getMonth()+1).toString().padStart(2, '0')}${new Date().getDate().toString().padStart(2, '0')}.pdf`;
+        pdf.setTextColor(255, 255, 255);
+        pdf.text('YOUR LOGO', margin, 40);
+
+        // Add title with subtle shadow
+        pdf.setFontSize(28);
+        pdf.setTextColor(255, 255, 255);
+        pdf.text('USER REGISTRATION', pageWidth / 2, 80, { align: 'center' });
+
+        // Add decorative elements
+        pdf.setDrawColor(255, 255, 255, 0.3);
+        pdf.setLineWidth(1);
+        pdf.line(margin, 100, pageWidth - margin, 100);
+
+        yPosition = 150;
+
+        // Add user details card
+        pdf.setFillColor(250, 250, 250);
+        pdf.roundedRect(margin, yPosition, contentWidth, 180, 5, 5, 'F');
+        pdf.setDrawColor(230, 230, 230);
+        pdf.roundedRect(margin, yPosition, contentWidth, 180, 5, 5, 'S');
+
+        // Card title
+        pdf.setFontSize(16);
+        pdf.setTextColor(70, 130, 180);
+        pdf.text('PERSONAL INFORMATION', margin + 20, yPosition + 30);
+
+        // Two column layout
+        const column1 = margin + 30;
+        const column2 = pageWidth / 2 + 10;
+        const lineHeight = 25;
+        let cardY = yPosition + 60;
+
+        pdf.setFontSize(12);
+        pdf.setTextColor(80, 80, 80);
+
+        // Column 1
+        pdf.text(`• Full Name: ${data['full-name'] || 'Not provided'}`, column1, cardY);
+        pdf.text(`• Username: ${data['username'] || 'Not provided'}`, column1, cardY + lineHeight);
+        pdf.text(`• Unique ID: ${data['unique-id'] || 'Not provided'}`, column1, cardY + lineHeight * 2);
+
+        // Column 2
+        pdf.text(`• Email: ${data['email'] || 'Not provided'}`, column2, cardY);
+        pdf.text(`• Phone: ${data['phone'] || 'Not provided'}`, column2, cardY + lineHeight);
+        pdf.text(`• Date of Birth: ${data['birthdate'] || 'Not provided'}`, column2, cardY + lineHeight * 2);
+
+        yPosition += 220;
+
+        // Add security information card
+        pdf.setFillColor(250, 250, 250);
+        pdf.roundedRect(margin, yPosition, contentWidth, 150, 5, 5, 'F');
+        pdf.setDrawColor(230, 230, 230);
+        pdf.roundedRect(margin, yPosition, contentWidth, 150, 5, 5, 'S');
+
+        // Card title
+        pdf.setFontSize(16);
+        pdf.setTextColor(70, 130, 180);
+        pdf.text('SECURITY INFORMATION', margin + 20, yPosition + 30);
+
+        cardY = yPosition + 60;
+        pdf.setFontSize(12);
+        pdf.setTextColor(80, 80, 80);
+
+        pdf.text(`• Security Question: ${securityQuestion || 'Not selected'}`, column1, cardY);
+        pdf.text(`• Security Answer: ${data['security-answer'] || 'Not provided'}`, column1, cardY + lineHeight);
+        pdf.text(`• Password: ${'•'.repeat(8)}`, column2, cardY);
+        pdf.text(`• Terms Accepted: ${agreedToTerms ? '✓ Yes' : '✗ No'}`, column2, cardY + lineHeight);
+
+        yPosition += 180;
+
+        // Add additional information card
+        pdf.setFillColor(250, 250, 250);
+        pdf.roundedRect(margin, yPosition, contentWidth, 120, 5, 5, 'F');
+        pdf.setDrawColor(230, 230, 230);
+        pdf.roundedRect(margin, yPosition, contentWidth, 120, 5, 5, 'S');
+
+        // Card title
+        pdf.setFontSize(16);
+        pdf.setTextColor(70, 130, 180);
+        pdf.text('ADDITIONAL DETAILS', margin + 20, yPosition + 30);
+
+        cardY = yPosition + 60;
+        pdf.setFontSize(12);
+        pdf.setTextColor(80, 80, 80);
+
+        pdf.text(`• Gender: ${gender ? gender.value.charAt(0).toUpperCase() + gender.value.slice(1) : 'Not specified'}`, column1, cardY);
+
+        // Handle multi-line address with bullet point
+        const addressText = `• Address: ${data['address'] || 'Not provided'}`;
+        const addressLines = pdf.splitTextToSize(addressText, contentWidth - 60);
+        pdf.text(addressLines, column1, cardY + lineHeight);
+
+        // Add footer with gradient
+        pdf.setFillColor(gradient);
+        pdf.rect(0, pageHeight - 60, pageWidth, 60, 'F');
+
+        // Footer text
+        pdf.setFontSize(10);
+        pdf.setTextColor(255, 255, 255, 0.8);
+        pdf.text(`Document ID: #${Math.random().toString(36).substring(2, 10).toUpperCase()}`, margin, pageHeight - 35);
+        pdf.text(`Generated on ${new Date().toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        })}`, pageWidth - margin, pageHeight - 35, { align: 'right' });
+
+        // Add subtle watermark
+        pdf.setFontSize(48);
+        pdf.setTextColor(230, 230, 230, 0.1);
+        pdf.setGState(new pdf.GState({ opacity: 0.1 }));
+        pdf.text('CONFIDENTIAL', pageWidth / 2, pageHeight / 2, { 
+            angle: 45, 
+            align: 'center' 
+        });
+
+        // Save the PDF with professional filename
+        const fileName = `User_Registration_${data['username'] || 'Document'}_${new Date().toISOString().slice(0, 10)}.pdf`;
         pdf.save(fileName);
     });
 
